@@ -1,0 +1,56 @@
+The following is for a class which will greatly simplify mousepointer handling.
+
+At the top of any Sub/Function where you want to control the mousepointer: 
+Dim oMp As CMousePointer
+Set oMp = New CMousepointer
+This will remember the curent mousepointer and set the mousepointer to vbHourglass.
+
+If you actually want to force to vbDefault, as in error handling Sub/Functions, or in cases where you want to set to vbHourglass conditionaly, add: 
+oMp.Houglass = False 
+or
+oMp.Value = vbDefault
+
+You can use the Hourglass or Value lets to change the mousepointer anywhere else in your Sub/Function, if needed.
+
+In the Sub/Function exit routine: 
+Set oMp = Nothing
+This will reset the mousepointer to whatever it was on entering the module
+
+
+Code for CMousePointer.cls starts here ***********************************************************
+
+' Description : This class implements a slick way to control the mousepointer
+'             : Initialization remembers current mousepointer, then changes to hourglass
+'             : You can change the mousepointer to any value if desired.
+'             : Termination restores mousepointer to preinitialize value.
+'             : Avoids flicker by avoiding unnecessary mouse pointer changes.
+' Created     : Dennis F McGrath 12/4/2001
+' Modifed     : DFM - 7/4/02 added Hourglass property to make use even easier
+
+Private miInitialMousePointer As Integer
+
+'Store the current value of mousepointer and set to hourglass
+Private Sub Class_Initialize()
+    miInitialMousePointer = Screen.MousePointer
+    Value = vbHourglass
+End Sub
+
+' Reset the mousepointer to the stored value
+Private Sub Class_Terminate()
+    Value = miInitialMousePointer
+End Sub
+
+' An easy way to set either Hourglass or Default
+Public Property Let HourGlass(ByVal bHourglass As Boolean)
+    Value = IIf(bHourglass, vbHourglass, vbDefault)
+End Property
+
+' Set the mousepointer
+Public Property Let Value(ByVal iPointer As Integer)
+On Error Resume Next
+    If Screen.MousePointer <> iPointer Then
+        Screen.MousePointer = iPointer
+    End If
+    DoEvents
+End Property
+
